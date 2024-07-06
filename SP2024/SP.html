@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Segundo parcial LABO III</title>
+</head>
+<style>
+
+    body
+    {
+        font-family: Arial, sans-serif;
+        background-color: darkgrey;
+        margin: 0;
+        padding: 0;
+    }
+    header 
+    {
+        background-color: darkgrey;
+        color: black;
+        text-align: center;
+        padding: 10px 0;
+    }
+    header p 
+    {
+        font-size: 24px;
+        font-weight: bold;
+        margin: 0;
+    }
+    table
+    {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+    }
+    th, td
+    {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+    th
+    {
+        background-color: grey;
+        color: black;
+    }
+
+    button
+    {
+        background-color: grey;
+        color: black;
+        border: none;
+        padding: 10px 20px;
+        margin: 10px 5px;
+        cursor: pointer;
+        border-radius: 0;
+        font-size: 16px;
+    }
+    
+    .abmContainer
+    {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+    .abmForm 
+    {
+        background-color: lightgrey;
+        padding: 20px;
+        border-radius: 0;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        width: 300px;
+    }
+    .abmForm h1 
+    {
+        margin-top: 0;
+    }
+    .abmForm form p 
+    {
+        margin: 10px 0;
+    }
+    .abmForm form input, .abmForm form select 
+    {
+        width: calc(100% - 20px);
+        padding: 8px;
+        margin-top: 5px;
+    }
+    .spinnerContainer
+    {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+    .spinner
+    {
+        border: 4px solid rgba(0, 0, 0, .1);
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border-left-color: red;
+
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin
+    {
+        0%
+        {
+            transform: rotate(0deg);
+        }
+
+        100%
+        {
+            transform: rotate(360deg);
+        }
+    }
+
+</style>
+<body>
+    <header>
+        <p>Lista de CIUDADANOS y EXTRANJEROS</p>
+    </header>
+    <div class="spinnerContainer">
+        <div id="spinner" class="spinner"></div>
+    </div>
+
+    <div id="formularioLista">
+        <table id="tablaPersonas">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Fecha de nacimiento</th>
+                    <th>DNI</th>
+                    <th>Pais de Origen</th>
+                    <th>Modificar/Eliminar</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            </tbody>
+        </table>
+        <button id="btnAgregar">Agregar Elemento</button>
+    </div>
+
+    <div class="abmContainer">
+        <div id="formularioAbm" class="abmForm" style="display: none;">
+            <h1>Formulario ABM</h1>
+
+            <p>ID: <input type="text" id="abmId" readonly></p>
+            <p>Nombre: <input type="text" id="abmNombre" placeholder="Nombre"></p>
+            <p>Apellido: <input type="text" id="abmApellido" placeholder="Apellido"></p>
+            <p>Fecha de nacimiento: <input type="number" id="abmFechaNacimiento" placeholder="Fecha de nacimiento"></p>
+            <p>Tipo:
+                <select id="selectTipo">
+                    <option value="Ciudadano">Ciudadano</option>
+                    <option value="Extranjero">Extranjero</option>
+                </select>
+            </p>
+
+            <div id="ciudadano">
+                <p>DNI: <input type="number" id="abmDNI" placeholder="DNI"></p>
+            </div>
+
+            <div id="extranjero">
+                <p>Pais de origen: <input type="text" id="abmPaisOrigen" placeholder="Pais de origen"></p>
+            </div>
+
+            <button type="button" id="btnAceptar">Aceptar</button>
+            <button type="button" id="btnCancelar">Cancelar</button>
+        </div>
+    </div>
+</body>
+<script>
+    class Persona
+    {
+        constructor(id, nombre, apellido, fechaNacimiento)
+        {
+            this.id = id;
+            this.nombre = nombre;
+            this.apellido = apellido;
+            this.fechaNacimiento = fechaNacimiento;
+        }
+
+        toString()
+        {
+            return `ID: ${this.id}, Nombre: ${this.nombre}, Apellido: ${this.apellido}, fecha de nacimiento: ${this.fechaNacimiento}`;
+        }
+
+        toJson()
+        {
+            return JSON.stringify({
+                id: this.id,
+                nombre: this.nombre,
+                apellido: this.apellido,
+                fechaNacimiento: this.fechaNacimiento
+            });
+        }
+    }
+
+    class Ciudadano extends Persona
+    {
+        constructor(id, nombre, apellido, fechaNacimiento, dni)
+        {
+            super(id, nombre, apellido, fechaNacimiento);
+            this.dni = dni;
+        }
+
+        toString()
+        {
+            return `${super.toString()}, DNI: ${this.dni}`;
+        }
+
+        toJson()
+        {
+            return JSON.stringify({
+                id: this.id,
+                nombre: this.nombre,
+                apellido: this.apellido,
+                fechaNacimiento: this.fechaNacimiento,
+                dni: this.dni
+            });
+        }
+    }
+
+    class Extranjero extends Persona
+    {
+        constructor(id, nombre, apellido, fechaNacimiento, paisOrigen)
+        {
+            super(id, nombre, apellido, fechaNacimiento);
+            this.paisOrigen = paisOrigen;
+        }
+
+        toString()
+        {
+            return `${super.toString()}, Pais de origen: ${this.paisOrigen}`;
+        }
+    }
+
+    const API_URL = "https://examenesutn.vercel.app/api/PersonaCiudadanoExtranjero";
+
+    let LISTAPERSONAS = [];
+
+    function $(id){return document.getElementById(id)}
+
+document.addEventListener("DOMContentLoaded", function (){
+    mostrarListaPersonas();
+});
+
+function mostrarListaPersonas()
+{
+    mostrarSpinner();
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", API_URL);
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4 && xhr.status == 200)
+        {
+            LISTAPERSONAS = JSON.parse(xhr.responseText);
+            renderizarTabla();
+        }
+        
+        ocultarSpinner();
+    };
+
+    xhr.send();
+}
+
+function renderizarTabla()
+{
+    let tabla = document.querySelector("#tablaPersonas tbody");
+
+    borrarTd();
+
+    LISTAPERSONAS.forEach(function(extranjero) {
+        let fila = document.createElement("tr");
+        
+        let columnaId = document.createElement("td");
+        columnaId.textContent = extranjero.id; 
+        fila.appendChild(columnaId);
+        
+        let columnaNombre = document.createElement("td");
+        columnaNombre.textContent = extranjero.nombre;
+        fila.appendChild(columnaNombre);
+        
+        let columnaApellido = document.createElement("td");
+        columnaApellido.textContent = extranjero.apellido;
+        fila.appendChild(columnaApellido);
+
+        let columnaFechaNacimiento = document.createElement("td");
+        columnaFechaNacimiento.textContent = extranjero.fechaNacimiento;
+        fila.appendChild(columnaFechaNacimiento);
+
+        let columnaDNI = document.createElement("td");
+        columnaDNI.textContent = extranjero.dni ;
+        fila.appendChild(columnaDNI);
+
+        let columnaPaisOrigen = document.createElement("td");
+        columnaPaisOrigen.textContent = extranjero.paisOrigen ;
+        fila.appendChild(columnaPaisOrigen);;
+        
+        let columnaBotones = document.createElement("td");
+        let botonModificar = document.createElement("button");
+        botonModificar.textContent = "Modificar";
+        //MODIFICAR
+        botonModificar.addEventListener("click", function() {
+            console.log("Click modificar " + extranjero.id);
+            
+            mostrarAbm(extranjero);
+        });
+        let botonEliminar = document.createElement("button");
+            botonEliminar.textContent = "Eliminar";
+            //ELIMINAR
+            botonEliminar.addEventListener("click", function() {
+                console.log("Click eliminar " + extranjero.id);
+
+                mostrarSpinner();
+                const xhr = new XMLHttpRequest();
+                xhr.open("DELETE", API_URL);
+                xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+                xhr.onreadystatechange = function() {
+                    if (xhr.status === 200)
+                    {
+                        LISTAPERSONAS = LISTAPERSONAS.filter(persona => persona.id !== extranjero.id);
+
+                        renderizarTabla();
+                        ocultarSpinner();
+                    }
+                    else
+                    {
+                        console.error("Error al eliminar");
+                        
+                        ocultarSpinner();
+                    }
+                };
+
+                xhr.send(JSON.stringify({ id: extranjero.id }));
+            });
+
+            columnaBotones.appendChild(botonModificar);
+            columnaBotones.appendChild(botonEliminar);
+            
+            fila.appendChild(columnaBotones);
+            tabla.appendChild(fila);
+        });
+    }
+
+    $("btnAgregar").addEventListener("click", function() {
+        mostrarAbm();
+
+        $("selectTipo").addEventListener("change", function (){
+            let tipo = this.value;
+            actualizarVisibilidadCampos(tipo);
+
+            $("abmDNI").value = "";
+            $("abmPaisOrigen").value = "";
+
+            console.log(tipo);
+        });
+    });
+
+    //BOTON ACEPTAR EN ABM
+    $("btnAceptar").addEventListener("click", () => {
+        console.log("Click aceptar abm");
+
+        let nuevaPersona = {
+            id: $("abmId").value,
+            nombre: $("abmNombre").value,
+            apellido: $("abmApellido").value,
+            fechaNacimiento: $("abmFechaNacimiento").value,
+            tipo: $("selectTipo").value,
+            dni: $("abmDNI").value,
+            paisOrigen: $("abmPaisOrigen").value,
+        };
+
+        if (nuevaPersona.nombre == "" || nuevaPersona.apellido == "")
+        {
+            alert("Complete los campos Nombre, Apellido o Edad correctamente");
+            return;
+        }
+
+        if (nuevaPersona.tipo === "Ciudadano") 
+        {
+            if (nuevaPersona.dni == "" || nuevaPersona.dni < 0)
+            {
+                alert("Complete la fecha de nacimiento correctamente");
+                return;
+            }
+        }
+
+        if (nuevaPersona.tipo === "Extranjero")
+        {
+            if (nuevaPersona.paisOrigen == "" || typeof nuevaPersona.paisOrigen !== 'string')
+            {
+                alert("Complete el pais de origen correctamente");
+                return;
+            }
+        }
+
+        if (nuevaPersona.id)
+        {
+            actualizarPersona(nuevaPersona);
+
+            renderizarTabla();
+            ocultarAbm();
+        }
+        else
+        {
+            insertarPersona(nuevaPersona);
+
+            renderizarTabla();
+            ocultarAbm();
+        }
+    });
+
+    $("btnCancelar").addEventListener("click", function() {
+        ocultarAbm();
+        borrarTd();
+        renderizarTabla();
+    });
+
+    function mostrarAbm(persona = null)
+    {
+        $("formularioAbm").style.display = "block";
+        $("formularioLista").style.display = "none";
+
+        let tipo = $("selectTipo");
+
+        if (persona)
+        {
+            $("selectTipo").disabled = true;
+
+            $("abmId").value = persona.id;
+            $("abmNombre").value = persona.nombre;
+            $("abmApellido").value = persona.apellido;
+            $("abmFechaNacimiento").value = persona.fechaNacimiento;
+            if (persona.paisOrigen)
+            {
+                tipo.value = "Extranjero";
+            }
+            else
+            {
+                tipo.value = "Ciudadano";
+            }
+            $("abmDNI").value = persona.dni;
+            $("abmPaisOrigen").value = persona.paisOrigen;
+            
+            actualizarVisibilidadCampos(tipo.value);
+        }
+        else
+        {
+            $("abmId").value = "";
+            $("abmNombre").value = "";
+            $("abmApellido").value = "";
+            $("abmFechaNacimiento").value = "";
+            $("abmDNI").value = "";
+            $("abmPaisOrigen").value = "";
+
+            $("selectTipo").disabled = false;
+
+            actualizarVisibilidadCampos(tipo.value);
+        }
+    }
+    function ocultarAbm()
+    {
+        $("formularioAbm").style.display = "none";
+        $("formularioLista").style.display = "block";
+
+        renderizarTabla();
+    }
+
+    function actualizarVisibilidadCampos(tipo)
+    {
+        let divCiudadano = $("ciudadano");
+        let divExtranjero = $("extranjero");
+
+        if (tipo === "Ciudadano")
+        {
+            divCiudadano.style.display = "block";
+            divExtranjero.style.display = "none";
+        }
+        else
+        {
+            divCiudadano.style.display = "none";
+            divExtranjero.style.display = "block";
+        }
+    }
+
+
+    async function insertarPersona(nuevaPersona) {
+    mostrarSpinner();
+
+    // Validar los campos antes de enviar la solicitud
+    if (!nuevaPersona.nombre || !nuevaPersona.apellido || !nuevaPersona.fechaNacimiento ||
+        (nuevaPersona.tipo === "Ciudadano" && !nuevaPersona.dni) ||
+        (nuevaPersona.tipo === "Extranjero" && !nuevaPersona.paisOrigen)) {
+        alert("Por favor, complete todos los campos obligatorios.");
+        ocultarSpinner();
+        return;
+    }
+
+    let put = {
+        method: "PUT", //AGREGAR
+        headers: {
+            "Content-type": "application/json; charset=UTF-8"
+        },
+        body: JSON.stringify(nuevaPersona)
+    }
+
+    try {
+        let respuesta = await fetch(API_URL, put);
+        if (!respuesta.ok) {
+            throw new Error(`HTTP error! status: ${respuesta.status}`);
+        }
+        let data = await respuesta.text(); // Cambiado a .text() para manejar texto en lugar de JSON
+        console.log(data); // Aquí puedes ver la respuesta del servidor, por ejemplo, "Registro Actualizado"
+
+        try {
+            // Intentar analizar como JSON si es posible
+            let jsonData = JSON.parse(data);
+            nuevaPersona.id = jsonData.id;
+            LISTAPERSONAS.push(nuevaPersona);
+        } catch (e) {
+            // Si la respuesta no es JSON, simplemente manejar como texto
+            if (data.includes("Registro Actualizado")) {
+                console.log("Registro actualizado exitosamente.");
+                // Asignar un ID temporal o manejar el ID de otra manera
+                nuevaPersona.id = LISTAPERSONAS.length ? LISTAPERSONAS[LISTAPERSONAS.length - 1].id + 1 : 1;
+                LISTAPERSONAS.push(nuevaPersona);
+            } else {
+                console.warn("Respuesta no es JSON: " + data);
+            }
+        }
+        ocultarAbm();
+        renderizarTabla();
+    } catch (error) {
+        console.error(`Error al agregar el elemento: ${error.message}`);
+        alert(`Error al agregar el elemento: ${error.message}`);
+    } finally {
+        ocultarSpinner();
+    }
+}
+
+async function actualizarPersona(nuevaPersona) {
+    mostrarSpinner();
+
+    try {
+        const response = await fetch(API_URL, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json;charset=UTF-8"
+            },
+            body: JSON.stringify(nuevaPersona)
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        let responseData;
+        try {
+            responseData = await response.json(); // Intentar parsear la respuesta como JSON
+            console.log("Persona actualizada exitosamente:", responseData);
+
+            // Actualizar LISTAPERSONAS localmente
+            LISTAPERSONAS = LISTAPERSONAS.map(persona => {
+                if (persona.id === nuevaPersona.id) {
+                    // Actualizar la persona modificada
+                    return {
+                        ...persona,
+                        nombre: nuevaPersona.nombre,
+                        apellido: nuevaPersona.apellido,
+                        fechaNacimiento: nuevaPersona.fechaNacimiento,
+                        dni: nuevaPersona.dni,
+                        paisOrigen: nuevaPersona.paisOrigen
+                    };
+                } else {
+                    return persona; // Mantener las personas no modificadas
+                }
+            });
+
+            ocultarAbm();
+            renderizarTabla(); // Renderizar la tabla actualizada
+
+        } catch (error) {
+            console.warn("Respuesta del servidor no es JSON:", error);
+            alert("Registro actualizado exitosamente."); // Manejar la confirmación sin datos JSON si es necesario
+            // No hay datos JSON para actualizar LISTAPERSONAS, simplemente ocultar el formulario y renderizar la tabla
+            ocultarAbm();
+            renderizarTabla(); // Renderizar la tabla actualizada
+        }
+
+    } catch (error) {
+        console.error(`Error al actualizar el elemento: ${error.message}`);
+        alert(`Error al actualizar el elemento: ${error.message}`);
+    } finally {
+        ocultarSpinner();
+    }
+}
+
+    function borrarTd()
+    {
+        document.querySelectorAll("tbody td").forEach(cell => {
+            cell.remove();
+
+            console.log("BORRE!");
+        });
+    }
+
+    function mostrarSpinner()
+    {
+        $("spinner").parentNode.style.display = "flex";
+    }
+
+    function ocultarSpinner()
+    {
+        $("spinner").parentNode.style.display = "none";
+    }
+</script>
